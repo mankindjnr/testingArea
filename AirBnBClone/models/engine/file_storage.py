@@ -7,7 +7,6 @@ json file instances
 
 import json
 
-
 class FileStorage:
     """
     the serialization and deserialization class
@@ -39,13 +38,8 @@ class FileStorage:
                 dictionary[key] = value.to_dict()
 
         with open(FileStorage.__file_path, "w") as f:
+
             json.dump(dictionary, f)
-
-    def classes(self):
-        from models.base_model import BaseModel
-
-        classes = {"BaseModel": BaseModel}
-        return classes
 
     def reload(self):
         """
@@ -53,12 +47,15 @@ class FileStorage:
         (__file_path) exists; otherwise, do nothing. If the file doesn’t
         exist, no exceptions should be raised.
         """
+        from models.base_model import BaseModel
+
+        class_dict = {"BaseModel": BaseModel}
+        obj = {}
         try:
             with open(FileStorage.__file_path, "r") as f:
-                obj_dict = json.load(f)
-                obj_dict_copy = {}
-                for key, value in obj_dict.items():
-                    obj_dict_copy[key] = self.classes()[value["__class__"]](**value)
-                FileStorage.__objets = obj_dict_copy
+                json_data = json.load(f)
+                for key, value in json_data.items():
+                    obj[key] = class_dict[value["__class__"]](**value)
+                FileStorage.__objets = obj
         except FileNotFoundError:
             pass
