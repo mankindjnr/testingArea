@@ -4,7 +4,7 @@ the creation of the class BaseModel
 """
 from datetime import datetime, time, date
 import uuid
-
+from models import storage
 
 class BaseModel:
     """
@@ -12,13 +12,18 @@ class BaseModel:
     *args and **kwargs are optional arguments
     """
     def __init__(self, *args, **kwargs):
-        self.id = str(uuid.uuid4())
-        self.created_at = datetime.now()
-        self.updated_at = datetime.now()
-
-        attrs = {key: (datetime.strptime(value, "%Y-%m-%dT%H:%M:%S.%f") if
-                       key in ["created_at", "updated_at"] else value)
-                 for key, value in kwargs.items() if key != "__class__"}
+        if not kwargs:
+            self.id = str(uuid.uuid4())
+            self.created_at = datetime.now()
+            self.updated_at = datetime.now()
+            storage.new(self)
+        else:
+            for key, value in kwargs.items():
+                if key != "__class__":
+                    if key in ["created_at", "updated_at"]:
+                        value = datetime.\
+                            strptime(value, "%Y-%m-%dT%H:%M:%S.%f")
+                    setattr(self, key, value)
 
     def __str__(self):
         """
@@ -32,6 +37,7 @@ class BaseModel:
         this updates th public instance attribute updated at
         """
         self.updated_at = datetime.now()
+        storage.save()
 
     def to_dict(self):
         """
