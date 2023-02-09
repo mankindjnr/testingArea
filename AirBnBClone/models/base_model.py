@@ -6,6 +6,7 @@ from datetime import datetime, time, date
 import uuid
 from models import storage
 
+
 class BaseModel:
     """
     the  class BaseModel with its public instances and method

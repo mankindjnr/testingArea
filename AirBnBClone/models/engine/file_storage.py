@@ -13,7 +13,6 @@ class FileStorage:
     the serialization and deserialization class
     """
 
-
     __file_path = "file.json"
     __objects = {}
 
@@ -29,14 +28,24 @@ class FileStorage:
         sets in objects obj with key <obj class name>.id
         """
         key = f"{obj.__class__.__name__}.{obj.id}"
-        FileStorage.__objects[key] = obj.to_dict()
+        FileStorage.__objects[key] = obj
 
     def save(self):
         """
         serializes __objects to the JSON file(path ___path)
         """
+        dictionary = {}
+        for key, value in FileStorage.__objects.items():
+                dictionary[key] = value.to_dict()
+
         with open(FileStorage.__file_path, "w") as f:
-            json.dump(FileStorage.__objects, f)
+            json.dump(dictionary, f)
+
+    def classes(self):
+        from models.base_model import BaseModel
+
+        classes = {"BaseModel": BaseModel}
+        return classes
 
     def reload(self):
         """
@@ -46,6 +55,10 @@ class FileStorage:
         """
         try:
             with open(FileStorage.__file_path, "r") as f:
-                FileStorage.__objects = json.load(f)
+                obj_dict = json.load(f)
+                obj_dict_copy = {}
+                for key, value in obj_dict.items():
+                    obj_dict_copy[key] = self.classes()[value["__class__"]](**value)
+                FileStorage.__objets = obj_dict_copy
         except FileNotFoundError:
             pass
